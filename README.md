@@ -141,6 +141,31 @@ If `--batch-folder` is omitted, the script defaults back to the frontier optimiz
 
 ---
 
+## 4. QA Task Generation from Trajectory Metadata
+
+**File**: `infinigen_examples/qa_from_metadata.py`
+
+After running the batch trajectory pipeline, each output directory contains metadata CSVs (`object_bbox_dimensions.csv`, `object_appearance.csv`, etc.). Use the QA generator to synthesize evaluation tasks for multimodal models:
+
+```bash
+python infinigen_examples/qa_from_metadata.py \
+    --metadata-dir /data/trajectories/scene_001 \
+    --output /data/trajectories/scene_001/qa_tasks.json \
+    --measurement-tasks 5 \
+    --perspective-tasks 5 \
+    --spatiotemporal-tasks 3 \
+    --seed 42
+```
+
+**Task families**
+- **Measurement tasks** ask for precise dimensions with contextual cues (e.g., “What’s the height of the oak cabinet next to the sofa?”) and are scored with mean relative accuracy.
+- **Perspective-taking tasks** pose counting questions conditioned on the rendered trajectory (mean relative accuracy).
+- **Spatiotemporal tasks** request the appearance order of multiple objects across the trajectory video and are evaluated via exact-match accuracy.
+
+Each run emits a JSON payload describing the prompts, answers, and evaluation metrics, making it easy to integrate into auto-grading pipelines.
+
+---
+
 ## Troubleshooting & Tips
 
 - **Cluster performance**: Cluster moves broaden the search space. Trim their probability via gin configs if solves slow down.
