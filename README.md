@@ -25,15 +25,6 @@ INFINIGEN_MINIMAL_INSTALL=True pip install -e .
 pip install -e ".[terrain,vis]"
 ```
 
-Additional variants:
-- `pip install -e ".[sim]"` – bring in simulation assets (water, fire, etc.).
-- `pip install -e ".[dev,terrain,vis]" && pre-commit install` – add linting/CI helpers.
-
-:warning: If any command fails, rerun it with `-vv > logs.txt 2>&1` appended and attach `logs.txt` when filing an issue.
-
-Once the environment is ready, proceed with the feature sections below.
-
----
 
 ## 1. Cluster-Based Layout Optimization
 
@@ -93,7 +84,6 @@ Behind the scenes, the agent produces Python, compiles it via `agentic_result.fi
 
 The module now exposes two complementary pipelines. Choose the one that matches your workflow.
 
-### 3.1 Frontier Optimizer (JSON Output)
 
 - Implements the four-step frontier loop:
   1. Pick the closest unvisited target object.
@@ -109,26 +99,6 @@ blender --background --python infinigen_examples/trajectory_optimizer.py -- \
     --output /tmp/trajectory.json \
     --samples 1500 \
     --grid 0.6
-```
-
-### 3.2 Notebook-Derived Batch Pipeline
-
-The former `traj_opt_batch.ipynb` has been ported to pure Python (`camera_traj` + `run_batch_pipeline`). It now:
-- Applies automatic decimation to heavy `spawn_asset` meshes.
-- Converts Blender meshes → `trimesh` → 2D polygons for navigation and collision tests.
-- Uses pyrender segmentation to evaluate occlusion/visibility per object.
-- Writes CSV summaries (`object_bbox_dimensions.csv`, `object_appearance.csv`, `trajectory_data.csv`), segmentation PNGs, and `visual.pdf`.
-- Keyframes the Blender camera, renders PNG sequences, and (optionally) composes videos.
-
-**Batch CLI**
-```bash
-blender --background --python infinigen_examples/trajectory_optimizer.py -- \
-    --batch-folder /data/scenes \
-    --batch-output /data/trajectories \
-    --batch-room-type "living-room_0/0.ceiling" \
-    --batch-grid 0.2 \
-    --batch-samples 500 \
-    --batch-rotation-steps 30
 ```
 
 **Helpful flags**
@@ -166,11 +136,3 @@ Each run emits a JSON payload describing the prompts, answers, and evaluation me
 
 ---
 
-## Troubleshooting & Tips
-
-- **Cluster performance**: Cluster moves broaden the search space. Trim their probability via gin configs if solves slow down.
-- **Agentic compilation errors**: Failures are logged and retried up to `agentic_max_iterations`. Increase the limit or lower expectations when pointing at less reliable LLMs.
-- **Trajectory planning**: For huge rooms, increase `--grid` to coarsen Dijkstra, or raise `--samples` / `--batch-samples` for better viewpoints.
-- **Rendering**: Batch mode touches Blender’s Cycles settings; ensure GPU drivers are available if you switch from CPU-only installs.
-
-Feel free to mix-and-match these features or extend the registry in `agentic_framework.py` to describe new procedural APIs. Pull requests are welcome!
