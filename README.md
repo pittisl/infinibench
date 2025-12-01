@@ -8,7 +8,7 @@ This document captures the additions layered on top of stock InfiniBench: agenti
 
 ## Step 0 – Install Infinigen (Linux x86_64, Python Module)
 
-The workflow below mirrors the “Installing Infinigen as a Python Module” section of `Installation.md`, trimmed to the Linux x86_64 path that powers InfiniBench.
+Our work builds on [Infinigen](https://github.com/princeton-vl/infinigen). The workflow below mirrors the “Installing Infinigen as a Python Module”, trimmed to the Linux x86_64 path that powers InfiniBench. 
 
 ```bash
 # System dependencies (Ubuntu / Debian / WSL / other Linux x86_64 distros)
