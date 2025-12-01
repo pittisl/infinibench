@@ -1,4 +1,4 @@
-# InfiniBench Agentic & Trajectory Enhancements
+# InfiniBench:  Infinite Benchmarking for Visual Spatial Reasoning with Customizable Scene Complexity
 
 This document captures the additions layered on top of stock InfiniBench: agentic constraint generation, cluster-aware solvers, and both frontier and notebook-style camera trajectory optimizers. Start with Step 0 to install the codebase, then jump to the feature you care about.
 
