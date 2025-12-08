@@ -1,4 +1,6 @@
-# InfiniBench Agentic & Trajectory Enhancements
+# InfiniBench:  Infinite Benchmarking for Visual Spatial Reasoning with Customizable Scene Complexity
+
+Modern vision-language models (VLMs) are expected to have abilities of spatial reasoning with diverse scene complexities, but evaluating such abilities is difficult due to the lack of benchmarks that are not only diverse and scalable but also fully customizable. We present InfiniBench, a fully automated, customizable and user-friendly benchmark generator that can synthesize a theoretically infinite variety of 3D scenes with parameterized control on scene complexity. InfiniBench uniquely translates scene descriptions in natural language into photo-realistic videos with complex and physically plausible 3D layouts. This is achieved through three key innovations: 1) a LLM-based agentic framework that iteratively refines procedural scene constraints from scene descriptions; 2) a flexible cluster-based layout optimizer that generates dense and cluttered scenes previously intractable for procedural methods; and 3) a task-aware camera trajectory optimization method that renders scenes into videos with full object coverage as VLM input.
 
 This document captures the additions layered on top of stock InfiniBench: agentic constraint generation, cluster-aware solvers, and both frontier and notebook-style camera trajectory optimizers. Start with Step 0 to install the codebase, then jump to the feature you care about.
 
@@ -13,7 +15,7 @@ This document captures the additions layered on top of stock InfiniBench: agenti
 
 ## Step 0 – Install Infinigen (Linux x86_64, Python Module)
 
-The workflow below mirrors the “Installing Infinigen as a Python Module” section of `Installation.md`, trimmed to the Linux x86_64 path that powers InfiniBench.
+Our work builds on [Infinigen](https://github.com/princeton-vl/infinigen). The workflow below mirrors the “Installing Infinigen as a Python Module”, trimmed to the Linux x86_64 path that powers InfiniBench. 
 
 ```bash
 # System dependencies (Ubuntu / Debian / WSL / other Linux x86_64 distros)
