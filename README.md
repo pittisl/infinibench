@@ -2,11 +2,13 @@
 
 Modern vision-language models (VLMs) are expected to have abilities of spatial reasoning with diverse scene complexities, but evaluating such abilities is difficult due to the lack of benchmarks that are not only diverse and scalable but also fully customizable. We present InfiniBench, a fully automated, customizable and user-friendly benchmark generator that can synthesize a theoretically infinite variety of 3D scenes with parameterized control on scene complexity. InfiniBench uniquely translates scene descriptions in natural language into photo-realistic videos with complex and physically plausible 3D layouts. This is achieved through three key innovations: 1) a LLM-based agentic framework that iteratively refines procedural scene constraints from scene descriptions; 2) a flexible cluster-based layout optimizer that generates dense and cluttered scenes previously intractable for procedural methods; and 3) a task-aware camera trajectory optimization method that renders scenes into videos with full object coverage as VLM input.
 
-This document captures the additions layered on top of stock InfiniBench: agentic constraint generation, cluster-aware solvers, and both frontier and notebook-style camera trajectory optimizers. Start with Step 0 to install the codebase, then jump to the feature you care about.
-
 <div style="text-align: center;">
   <img src="./image/infinigen_overview.png" width="800" alt="overview diagram">
 </div>
+
+This document captures the additions layered on top of stock InfiniBench: agentic constraint generation, cluster-aware solvers, and both frontier and notebook-style camera trajectory optimizers. Start with Step 0 to install the codebase, then jump to the feature you care about.
+
+
 
 
 
@@ -137,7 +139,11 @@ blender --background --python infinigen_examples/trajectory_optimizer.py -- \
 - Rendering: `--batch-frame-prefix`, `--batch-frame-step`, `--batch-resolution`, `--batch-video-name`.
 - Navigation safety: `--batch-robot-radius`.
 
-If `--batch-folder` is omitted, the script defaults back to the frontier optimizer described in § 3.1.
+**The optimized trajectory should look like this**
+<p align="center">
+  <img src="./image/visual_path.png" width="400" alt="overview diagram">
+</p>
+
 
 ---
 
