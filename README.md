@@ -11,6 +11,8 @@ This document captures the additions layered on top of stock InfiniBench: agenti
 
 
 
+
+
 ---
 
 ## Step 0 – Install Infinigen (Linux x86_64, Python Module)
@@ -99,9 +101,10 @@ Behind the scenes, the agent produces Python, compiles it via `agentic_result.fi
 
 ## 3. Camera Trajectory Optimization
 
-<div style="text-align: center;">
+<p align="center">
   <img src="./image/path_gen.png" width="500" alt="overview diagram">
-</div>
+</p>
+
 
 
 **File**: `infinigen_examples/trajectory_optimizer.py`
