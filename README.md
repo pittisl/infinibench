@@ -2,6 +2,13 @@
 
 This document captures the additions layered on top of stock InfiniBench: agentic constraint generation, cluster-aware solvers, and both frontier and notebook-style camera trajectory optimizers. Start with Step 0 to install the codebase, then jump to the feature you care about.
 
+<div style="text-align: center;">
+  <img src="./image/infinigen_overview.png" width="600" alt="overview diagram">
+</div>
+
+
+
+
 ---
 
 ## Step 0 – Install Infinigen (Linux x86_64, Python Module)
@@ -28,6 +35,11 @@ pip install -e ".[terrain,vis]"
 
 ## 1. Cluster-Based Layout Optimization
 
+<div style="text-align: center;">
+  <img src="./image/optimizer.png" width="300" alt="optimization diagram">
+</div>
+
+
 **Key files**
 - `infinigen/core/constraints/example_solver/clusters.py`
 - `infinigen/core/constraints/example_solver/moves/cluster.py`
@@ -50,6 +62,11 @@ pip install -e ".[terrain,vis]"
 ---
 
 ## 2. Agentic Constraint Generation
+
+<div style="text-align: center;">
+  <img src="./image/constraint_generation.png" width="400" alt="overview diagram">
+</div>
+
 
 **Key files**
 - `infinigen_examples/constraints/agentic_framework.py`
@@ -79,6 +96,11 @@ Behind the scenes, the agent produces Python, compiles it via `agentic_result.fi
 ---
 
 ## 3. Camera Trajectory Optimization
+
+<div style="text-align: center;">
+  <img src="./image/path_gen.png" width="600" alt="overview diagram">
+</div>
+
 
 **File**: `infinigen_examples/trajectory_optimizer.py`
 
