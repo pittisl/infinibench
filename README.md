@@ -39,9 +39,10 @@ pip install -e ".[terrain,vis]"
 
 ## 1. Cluster-Based Layout Optimization
 
-<div style="text-align: center;">
+
+<p align="center">
   <img src="./image/optimizer.png" width="300" alt="optimization diagram">
-</div>
+</p>
 
 
 **Key files**
@@ -67,9 +68,11 @@ pip install -e ".[terrain,vis]"
 
 ## 2. Agentic Constraint Generation
 
-<div style="text-align: center;">
+
+<p align="center">
   <img src="./image/constraint_generation.png" width="400" alt="overview diagram">
-</div>
+</p>
+
 
 
 **Key files**
