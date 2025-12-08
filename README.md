@@ -5,7 +5,7 @@ Modern vision-language models (VLMs) are expected to have abilities of spatial r
 This document captures the additions layered on top of stock InfiniBench: agentic constraint generation, cluster-aware solvers, and both frontier and notebook-style camera trajectory optimizers. Start with Step 0 to install the codebase, then jump to the feature you care about.
 
 <div style="text-align: center;">
-  <img src="./image/infinigen_overview.png" width="600" alt="overview diagram">
+  <img src="./image/infinigen_overview.png" width="800" alt="overview diagram">
 </div>
 
 
@@ -100,7 +100,7 @@ Behind the scenes, the agent produces Python, compiles it via `agentic_result.fi
 ## 3. Camera Trajectory Optimization
 
 <div style="text-align: center;">
-  <img src="./image/path_gen.png" width="600" alt="overview diagram">
+  <img src="./image/path_gen.png" width="500" alt="overview diagram">
 </div>
 
 
