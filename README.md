@@ -225,8 +225,7 @@ Each run emits a JSON payload describing the prompts, answers, and evaluation me
 
 ## Acknowledgments
 
-Our code builds on ([infinigen](https://github.com/princeton-vl/infinigen)).  
-We are grateful to the authors for their work and contributions.
+Our code builds on ([infinigen](https://github.com/princeton-vl/infinigen)).  We are grateful to the authors for their work and contributions.
 
 If you use this repository, make sure to also review and comply with the licensing terms of the original project.
 
