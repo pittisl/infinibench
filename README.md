@@ -6,7 +6,7 @@ Modern vision-language models (VLMs) are expected to have abilities of spatial r
   <img src="./image/infinigen_overview.png" width="800" alt="overview diagram">
 </div>
 
-This document captures the additions layered on top of stock InfiniBench: agentic constraint generation, cluster-aware solvers, and both frontier and notebook-style camera trajectory optimizers. Start with Step 0 to install the codebase, then jump to the feature you care about.
+This document captures the additions layered on top of stock InfiniBench: agentic constraint generation, cluster-aware solvers, and both frontier and notebook-style camera trajectory optimizers. Some pre-generated examples can be found in this [Huggingface repo](https://huggingface.co/datasets/Haoming645/infinibench) Start with Step 0 to install the codebase, then jump to the feature you care about.
 
 
 
@@ -175,3 +175,19 @@ Each run emits a JSON payload describing the prompts, answers, and evaluation me
 
 ---
 
+## Acknowledgments
+
+Our code builds on ([infinigen](https://github.com/princeton-vl/infinigen)).  
+We are grateful to the authors for their work and contributions.
+
+If you use this repository, make sure to also review and comply with the licensing terms of the original project.
+
+ ## Citation
+ ```
+@article{wang2025infinibench,
+  title={InfiniBench: Infinite Benchmarking for Visual Spatial Reasoning with Customizable Scene Complexity},
+  author={Wang, Haoming and Xue, Qiyao and Gao, Wei},
+  journal={arXiv preprint arXiv:2511.18200},
+  year={2025}
+}
+ ```
