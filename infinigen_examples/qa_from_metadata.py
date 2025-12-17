@@ -259,6 +259,9 @@ def generate_tasks(
     tasks.extend(generate_perspective_tasks(objects, perspective))
     tasks.extend(generate_spatiotemporal_tasks(appearance_order, spatiotemporal))
 
+    for idx, task in enumerate(tasks):
+        task["id"] = f"task_{idx:04d}"
+
     return {
         "metadata_dir": str(metadata_dir),
         "task_count": len(tasks),

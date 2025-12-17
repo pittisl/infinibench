@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import inspect
 import logging
+import os
 import textwrap
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -31,6 +32,53 @@ class DummyLLM:
     def complete(self, prompt: str) -> str:
         logger.warning("DummyLLM in use – returning fallback response.")
         return self.fallback_response
+
+
+class OpenAIChatClient:
+    """LLM client backed by the OpenAI Chat Completions API."""
+
+    def __init__(
+        self,
+        model: str,
+        api_key: Optional[str] = None,
+        base_url: Optional[str] = None,
+        organization: Optional[str] = None,
+        system_prompt: str | None = None,
+        temperature: float = 0.2,
+    ):
+        try:
+            from openai import OpenAI  # type: ignore
+        except ImportError as exc:  # pragma: no cover - optional dependency
+            raise ImportError(
+                "openai package is required to use OpenAIChatClient. Install via 'pip install openai'."
+            ) from exc
+
+        kwargs: dict = {}
+        if api_key:
+            kwargs["api_key"] = api_key
+        if base_url:
+            kwargs["base_url"] = base_url
+        if organization:
+            kwargs["organization"] = organization
+
+        self._client = OpenAI(**kwargs)
+        self._model = model
+        self._system_prompt = (
+            system_prompt
+            or "You are the InfiniBench constraint authoring agent."
+        )
+        self._temperature = temperature
+
+    def complete(self, prompt: str) -> str:
+        response = self._client.chat.completions.create(
+            model=self._model,
+            messages=[
+                {"role": "system", "content": self._system_prompt},
+                {"role": "user", "content": prompt},
+            ],
+            temperature=self._temperature,
+        )
+        return response.choices[0].message.content.strip()
 
 
 @dataclass
@@ -337,6 +385,37 @@ def compile_only_executor_factory(
             )
 
     return _executor
+
+
+def resolve_llm_client_from_env() -> Optional[LLMClient]:
+    """Instantiates a real LLM client based on environment variables."""
+
+    provider = os.getenv("INFINIBENCH_AGENTIC_LLM", "").strip()
+    if not provider:
+        return None
+
+    provider = provider.lower()
+    if provider == "openai":
+        model = os.getenv("INFINIBENCH_OPENAI_MODEL")
+        if not model:
+            raise RuntimeError(
+                "Set INFINIBENCH_OPENAI_MODEL when INFINIBENCH_AGENTIC_LLM=openai."
+            )
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            raise RuntimeError(
+                "OPENAI_API_KEY is required to authenticate with OpenAI."
+            )
+        base_url = os.getenv("INFINIBENCH_OPENAI_BASE_URL") or os.getenv("OPENAI_BASE_URL")
+        organization = os.getenv("OPENAI_ORG") or os.getenv("OPENAI_ORGANIZATION")
+        return OpenAIChatClient(
+            model=model,
+            api_key=api_key,
+            base_url=base_url,
+            organization=organization,
+        )
+
+    raise RuntimeError(f"Unsupported INFINIBENCH_AGENTIC_LLM provider: {provider}")
 
 
 def build_default_agentic_generator(

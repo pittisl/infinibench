@@ -9,6 +9,46 @@ Modern vision-language models (VLMs) are expected to have abilities of spatial r
 This document captures the additions layered on top of stock InfiniBench: agentic constraint generation, cluster-aware solvers, and both frontier and notebook-style camera trajectory optimizers. Some pre-generated examples can be found in this [Huggingface repo](https://huggingface.co/datasets/Haoming645/infinibench) Start with Step 0 to install the codebase, then jump to the feature you care about.
 
 
+## Quickstart (Text ➜ Scene ➜ Video ➜ QA ➜ Metrics)
+
+1. **Install + deps.** Follow Step 0 below and ensure `ffmpeg` is on your `PATH` (required to encode the trajectory video).
+2. **Provide an LLM.** Install `openai` (`pip install openai`) and export:
+   ```bash
+   export OPENAI_API_KEY=sk-...              # or your Azure/OpenAI compatible key
+   export INFINIBENCH_AGENTIC_LLM=openai
+   export INFINIBENCH_OPENAI_MODEL=gpt-4o-mini
+   # optional: export INFINIBENCH_OPENAI_BASE_URL=https://... for Azure / custom gateways
+   ```
+   Skip the env vars if you want to fall back to the bundled `DummyLLM`.
+3. **Run the end-to-end script.** This drives Blender for scene + trajectory generation, builds QA tasks, and (optionally) scores responses:
+   ```bash
+   python infinigen_examples/run_end_to_end.py \
+     --scene-description "compact studio apartment with plants" \
+     --blender /path/to/blender \
+     --responses /path/to/model_predictions.json  # optional
+   ```
+4. **Inspect outputs.** The script creates a timestamped folder under `runs/` with:
+   - `scene/scene.blend` – the generated environment.
+   - `trajectory/scene/trajectory_frame_*.png` + `trajectory_video.mp4` – renders of the optimized path.
+   - `trajectory/scene/object_*.csv` – metadata consumed by QA generation.
+   - `qa/qa_tasks.json` – measurement/perspective/spatiotemporal prompts.
+   - `metrics.json` – accuracy summary when `--responses` is supplied.
+
+See the next section for more knobs (seeds, ffmpeg options, response format, etc.).
+
+## End-to-End Pipeline Script
+
+`infinigen_examples/run_end_to_end.py` exposes the entire reproducibility chain via one command. Key flags:
+- `--scene-description` (required) and `--disable-agentic` toggle whether the agent translates prose into constraints.
+- `--blender /path/to/blender` selects the Blender binary; all stages run headless.
+- Trajectory controls such as `--frame-prefix`, `--trajectory-samples`, `--trajectory-grid`, and `--trajectory-resolution` are forwarded to `trajectory_optimizer.py`'s batch pipeline.
+- QA sampling knobs (`--measurement-tasks`, `--perspective-tasks`, `--spatiotemporal-tasks`, `--qa-seed`).
+- `--responses predictions.json` enables metric computation. The JSON can either map task ids to predictions or contain a `responses` array with `{"id": "task_0000", "prediction": 2.1}` entries.
+- `--ffmpeg-bin` / `--video-fps` control how rendered frames are converted to `trajectory_video.mp4` (frames remain available even if ffmpeg is missing).
+
+The script is idempotent and safe to re-run with different descriptions or seeds; each invocation writes to a fresh directory unless `--output-root` is provided.
+
+
 
 
 
@@ -100,7 +140,10 @@ python infinigen_examples/generate_indoors.py \
 
 Behind the scenes, the agent produces Python, compiles it via `agentic_result.final_program.to_callable(...)`, and injects the resulting constraint builder into the standard greedy + simulated annealing loop.
 
-> **Note:** The scaffold ships with `DummyLLM`, which echoes the reference program. Point the generator at a real LLM client to obtain novel constraints.
+**Using a real LLM client**
+- Set `INFINIBENCH_AGENTIC_LLM=openai`, `INFINIBENCH_OPENAI_MODEL=<model-id>`, and `OPENAI_API_KEY` (plus `INFINIBENCH_OPENAI_BASE_URL` if you route through Azure or another gateway). `compose_indoors()` automatically picks up those variables and instantiates the `OpenAIChatClient` shim defined in `agentic_framework.py`.
+- To plug in another provider, implement the `LLMClient` protocol and pass it to `build_default_agentic_generator()` (e.g., via a gin-configured factory). Only `complete(prompt: str) -> str` is required.
+- Falling back to the default `DummyLLM` simply replays the in-context example and is only useful for debugging the compilation loop.
 
 ---
 
@@ -172,6 +215,12 @@ python infinigen_examples/qa_from_metadata.py \
 - **Spatiotemporal tasks** request the appearance order of multiple objects across the trajectory video and are evaluated via exact-match accuracy.
 
 Each run emits a JSON payload describing the prompts, answers, and evaluation metrics, making it easy to integrate into auto-grading pipelines.
+
+### Metric Definitions
+- **Mean relative accuracy (MRA)** is `1 - |prediction - target| / max(|target|, ε)` averaged over all measurement or perspective tasks. We use `ε = 1e-3` for measurement prompts (to avoid division by zero when values are tiny) and `ε = 1.0` for perspective/counting prompts. Scores are clipped to `[0, 1]`.
+- **Exact-match accuracy** counts a spatiotemporal response as correct only when the predicted ordering string matches the ground truth after lowercasing and trimming whitespace. The final score is the fraction of exact matches across the task set.
+
+`run_end_to_end.py` writes these summaries to `metrics.json` when a predictions file is supplied via `--responses`.
 
 ---
 

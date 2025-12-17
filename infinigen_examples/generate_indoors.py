@@ -166,8 +166,9 @@ def compose_indoors(
     constraint_builder = home_constraints.home_furniture_constraints
 
     if use_agentic_constraints and scene_description:
+        llm_client = agentic_framework.resolve_llm_client_from_env()
         agentic_generator = agentic_framework.build_default_agentic_generator(
-            llm_client=None,
+            llm_client=llm_client,
             executor=agentic_framework.compile_only_executor_factory(),
             max_iterations=agentic_max_iterations,
         )
