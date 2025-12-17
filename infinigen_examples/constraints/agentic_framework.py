@@ -81,6 +81,45 @@ class OpenAIChatClient:
         return response.choices[0].message.content.strip()
 
 
+class GeminiChatClient:
+    """LLM client backed by the Google Gemini Generative Language API."""
+
+    def __init__(
+        self,
+        model: str,
+        api_key: Optional[str] = None,
+        system_prompt: str | None = None,
+        temperature: float = 0.2,
+    ):
+        try:
+            import google.generativeai as genai  # type: ignore
+        except ImportError as exc:  # pragma: no cover - optional dependency
+            raise ImportError(
+                "google-generativeai package is required to use GeminiChatClient. Install via 'pip install google-generativeai'."
+            ) from exc
+
+        effective_key = api_key or os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+        if not effective_key:
+            raise RuntimeError(
+                "Gemini API key missing. Set GEMINI_API_KEY or GOOGLE_API_KEY to use GeminiChatClient."
+            )
+        genai.configure(api_key=effective_key)
+
+        model_kwargs = {}
+        if system_prompt:
+            model_kwargs["system_instruction"] = system_prompt
+
+        self._model = genai.GenerativeModel(model_name=model, **model_kwargs)
+        self._generation_config = {"temperature": temperature}
+
+    def complete(self, prompt: str) -> str:
+        response = self._model.generate_content(prompt, generation_config=self._generation_config)
+        text = getattr(response, "text", None)
+        if not text:
+            raise RuntimeError("Gemini response did not contain text content.")
+        return text.strip()
+
+
 @dataclass
 class ConstraintProgram:
     """Container for machine-generated procedural constraints."""
@@ -413,6 +452,22 @@ def resolve_llm_client_from_env() -> Optional[LLMClient]:
             api_key=api_key,
             base_url=base_url,
             organization=organization,
+        )
+
+    if provider == "gemini":
+        model = os.getenv("INFINIBENCH_GEMINI_MODEL", "gemini-1.5-pro-latest")
+        api_key = (
+            os.getenv("INFINIBENCH_GEMINI_API_KEY")
+            or os.getenv("GEMINI_API_KEY")
+            or os.getenv("GOOGLE_API_KEY")
+        )
+        if not api_key:
+            raise RuntimeError(
+                "Set GEMINI_API_KEY (or GOOGLE_API_KEY) when INFINIBENCH_AGENTIC_LLM=gemini."
+            )
+        return GeminiChatClient(
+            model=model,
+            api_key=api_key,
         )
 
     raise RuntimeError(f"Unsupported INFINIBENCH_AGENTIC_LLM provider: {provider}")

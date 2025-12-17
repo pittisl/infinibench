@@ -9,27 +9,29 @@ Modern vision-language models (VLMs) are expected to have abilities of spatial r
 This document captures the additions layered on top of stock InfiniBench: agentic constraint generation, cluster-aware solvers, and both frontier and notebook-style camera trajectory optimizers. Some pre-generated examples can be found in this [Huggingface repo](https://huggingface.co/datasets/Haoming645/infinibench) Start with Step 0 to install the codebase, then jump to the feature you care about.
 
 
-## Quickstart (Text ➜ Scene ➜ Video ➜ QA )
+## Quickstart (Text ➜ Scene ➜ Video ➜ QA ➜ Metrics)
 
-1. **Install + deps.** Follow Step 0 below 
-2. **Provide an LLM.** Install `openai` (`pip install openai`) and export:
+1. **Install + deps.** Follow Step 0 below and ensure `ffmpeg` is on your `PATH` (needed to encode the trajectory video).
+2. **Provide an LLM.** Install `google-generativeai` (`pip install google-generativeai`) and export:
    ```bash
-   export OPENAI_API_KEY=sk-...              # or your Azure/OpenAI compatible key
-   export INFINIBENCH_AGENTIC_LLM=openai
-   export INFINIBENCH_OPENAI_MODEL=gpt-4o-mini
+   export GEMINI_API_KEY=your_api_key
+   export INFINIBENCH_AGENTIC_LLM=gemini
+   export INFINIBENCH_GEMINI_MODEL=gemini-1.5-pro-latest   # or another Gemini Pro SKU
    ```
-   Skip the env vars if you want to fall back to the bundled `DummyLLM`.
-3. **Run the end-to-end script.** This drives Blender for scene + trajectory generation, builds QA tasks:
+   Skip the env vars to fall back to the bundled `DummyLLM`, or set `INFINIBENCH_AGENTIC_LLM=openai` plus the OpenAI variables described later if you prefer that backend.
+3. **Run the end-to-end script.** This drives Blender for scene + trajectory generation, builds QA tasks, and optionally scores predictions:
    ```bash
    python infinigen_examples/run_end_to_end.py \
      --scene-description "compact studio apartment with plants" \
-     --output-root /path \
+     --blender /path/to/blender \
+     --responses /path/to/model_predictions.json  # optional
    ```
-4. **Inspect outputs.** The script creates a timestamped folder under `runs/` with:
+4. **Inspect outputs.** Each run writes to `runs/infinibench_<timestamp>/` (or your `--output-root`):
    - `scene/scene.blend` – the generated environment.
-   - `trajectory/scene/trajectory_frame_*.png` + `trajectory_video.mp4` – renders of the optimized path.
+   - `trajectory/scene/trajectory_frame_*.png` + `trajectory_video.mp4` – renders of the optimized path (video skipped if ffmpeg is missing).
    - `trajectory/scene/object_*.csv` – metadata consumed by QA generation.
    - `qa/qa_tasks.json` – measurement/perspective/spatiotemporal prompts.
+   - `metrics.json` – mean-relative-accuracy + exact-match scores when `--responses` is provided.
 
 
 See the next section for more knobs (seeds, ffmpeg options, response format, etc.).
@@ -140,8 +142,9 @@ python infinigen_examples/generate_indoors.py \
 Behind the scenes, the agent produces Python, compiles it via `agentic_result.final_program.to_callable(...)`, and injects the resulting constraint builder into the standard greedy + simulated annealing loop.
 
 **Using a real LLM client**
-- Set `INFINIBENCH_AGENTIC_LLM=openai`, `INFINIBENCH_OPENAI_MODEL=<model-id>`, and `OPENAI_API_KEY` (plus `INFINIBENCH_OPENAI_BASE_URL` if you route through Azure or another gateway). `compose_indoors()` automatically picks up those variables and instantiates the `OpenAIChatClient` shim defined in `agentic_framework.py`.
-- To plug in another provider, implement the `LLMClient` protocol and pass it to `build_default_agentic_generator()` (e.g., via a gin-configured factory). Only `complete(prompt: str) -> str` is required.
+- **Gemini Pro (recommended).** `agentic_framework.GeminiChatClient` activates when `INFINIBENCH_AGENTIC_LLM=gemini`. Set `GEMINI_API_KEY` (or `GOOGLE_API_KEY`), optionally override the default `INFINIBENCH_GEMINI_MODEL=gemini-1.5-pro-latest`, and install `google-generativeai`. The agent will automatically call Gemini Pro through the official SDK.
+- **OpenAI-compatible stacks.** Keep the previous workflow by exporting `INFINIBENCH_AGENTIC_LLM=openai`, `OPENAI_API_KEY`, and `INFINIBENCH_OPENAI_MODEL` (plus `INFINIBENCH_OPENAI_BASE_URL` for Azure / custom gateways). This routes requests through the bundled `OpenAIChatClient`.
+- **Custom providers.** Implement the `LLMClient` protocol (`complete(prompt: str) -> str`) and pass the instance into `build_default_agentic_generator()` via gin or a thin wrapper.
 - Falling back to the default `DummyLLM` simply replays the in-context example and is only useful for debugging the compilation loop.
 
 ---
