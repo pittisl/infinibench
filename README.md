@@ -19,34 +19,19 @@ This document captures the additions layered on top of stock InfiniBench: agenti
    export INFINIBENCH_GEMINI_MODEL=gemini-1.5-pro-latest   # or another Gemini Pro SKU
    ```
    Skip the env vars to fall back to the bundled `DummyLLM`, or set `INFINIBENCH_AGENTIC_LLM=openai` plus the OpenAI variables described later if you prefer that backend.
-3. **Run the end-to-end script.** This drives Blender for scene + trajectory generation, builds QA tasks, and optionally scores predictions:
+3. **Run the end-to-end script.** This drives Blender for scene + trajectory generation, builds QA tasks:
    ```bash
    python infinigen_examples/run_end_to_end.py \
      --scene-description "compact studio apartment with plants" \
      --blender /path/to/blender \
-     --responses /path/to/model_predictions.json  # optional
    ```
 4. **Inspect outputs.** Each run writes to `runs/infinibench_<timestamp>/` (or your `--output-root`):
    - `scene/scene.blend` – the generated environment.
    - `trajectory/scene/trajectory_frame_*.png` + `trajectory_video.mp4` – renders of the optimized path (video skipped if ffmpeg is missing).
    - `trajectory/scene/object_*.csv` – metadata consumed by QA generation.
    - `qa/qa_tasks.json` – measurement/perspective/spatiotemporal prompts.
-   - `metrics.json` – mean-relative-accuracy + exact-match scores when `--responses` is provided.
 
 
-See the next section for more knobs (seeds, ffmpeg options, response format, etc.).
-
-## End-to-End Pipeline Script
-
-`infinigen_examples/run_end_to_end.py` exposes the entire reproducibility chain via one command. Key flags:
-- `--scene-description` (required) and `--disable-agentic` toggle whether the agent translates prose into constraints.
-- `--blender /path/to/blender` selects the Blender binary; all stages run headless.
-- Trajectory controls such as `--frame-prefix`, `--trajectory-samples`, `--trajectory-grid`, and `--trajectory-resolution` are forwarded to `trajectory_optimizer.py`'s batch pipeline.
-- QA sampling knobs (`--measurement-tasks`, `--perspective-tasks`, `--spatiotemporal-tasks`, `--qa-seed`).
-- `--responses predictions.json` enables metric computation. The JSON can either map task ids to predictions or contain a `responses` array with `{"id": "task_0000", "prediction": 2.1}` entries.
-- `--ffmpeg-bin` / `--video-fps` control how rendered frames are converted to `trajectory_video.mp4` (frames remain available even if ffmpeg is missing).
-
-The script is idempotent and safe to re-run with different descriptions or seeds; each invocation writes to a fresh directory unless `--output-root` is provided.
 
 
 
