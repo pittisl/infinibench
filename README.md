@@ -9,30 +9,28 @@ Modern vision-language models (VLMs) are expected to have abilities of spatial r
 This document captures the additions layered on top of stock InfiniBench: agentic constraint generation, cluster-aware solvers, and both frontier and notebook-style camera trajectory optimizers. Some pre-generated examples can be found in this [Huggingface repo](https://huggingface.co/datasets/Haoming645/infinibench) Start with Step 0 to install the codebase, then jump to the feature you care about.
 
 
-## Quickstart (Text ➜ Scene ➜ Video ➜ QA ➜ Metrics)
+## Quickstart (Text ➜ Scene ➜ Video ➜ QA )
 
-1. **Install + deps.** Follow Step 0 below and ensure `ffmpeg` is on your `PATH` (required to encode the trajectory video).
+1. **Install + deps.** Follow Step 0 below 
 2. **Provide an LLM.** Install `openai` (`pip install openai`) and export:
    ```bash
    export OPENAI_API_KEY=sk-...              # or your Azure/OpenAI compatible key
    export INFINIBENCH_AGENTIC_LLM=openai
    export INFINIBENCH_OPENAI_MODEL=gpt-4o-mini
-   # optional: export INFINIBENCH_OPENAI_BASE_URL=https://... for Azure / custom gateways
    ```
    Skip the env vars if you want to fall back to the bundled `DummyLLM`.
-3. **Run the end-to-end script.** This drives Blender for scene + trajectory generation, builds QA tasks, and (optionally) scores responses:
+3. **Run the end-to-end script.** This drives Blender for scene + trajectory generation, builds QA tasks:
    ```bash
    python infinigen_examples/run_end_to_end.py \
      --scene-description "compact studio apartment with plants" \
-     --blender /path/to/blender \
-     --responses /path/to/model_predictions.json  # optional
+     --output-root /path \
    ```
 4. **Inspect outputs.** The script creates a timestamped folder under `runs/` with:
    - `scene/scene.blend` – the generated environment.
    - `trajectory/scene/trajectory_frame_*.png` + `trajectory_video.mp4` – renders of the optimized path.
    - `trajectory/scene/object_*.csv` – metadata consumed by QA generation.
    - `qa/qa_tasks.json` – measurement/perspective/spatiotemporal prompts.
-   - `metrics.json` – accuracy summary when `--responses` is supplied.
+
 
 See the next section for more knobs (seeds, ffmpeg options, response format, etc.).
 
@@ -133,6 +131,7 @@ pip install -e ".[terrain,vis]"
 ```bash
 python infinigen_examples/generate_indoors.py \
     --scene_description "compact studio apartment with plants and wall art" \
+    --output_folder path\to\scene \
     --use_agentic_constraints True \
     --agentic_max_iterations 3 \
     -p solve_steps_large=400
